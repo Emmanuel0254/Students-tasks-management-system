@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Login | CPMS</title>
+  <style>
+    body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f6f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 320px;
+  text-align: center;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #1a237e;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background-color: blue;
+}
+
+.message {
+  color: red;
+  font-size: 14px;
+}
+
+.hidden {
+  display: none;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Student Login</h2>
+
+    <form id="loginForm">
+      <input type="text" id="admission_no" placeholder="Admission Number" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <p id="message" class="message"></p>
+
+    <p>Don’t have an account? <a href="#" id="toggleSignup">Sign Up</a></p>
+  </div>
+
+  <!-- Signup Form -->
+  <div class="container hidden" id="signupContainer">
+    <h2>Student Signup</h2>
+    <form id="signupForm">
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="text" id="admission_no_signup" placeholder="Admission Number" required>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password_signup" placeholder="Password" required>
+      <select id="course" required>
+        <option value="">-- Select Course --</option>
+        <option value="Information Technology">Information Technology</option>
+        <option value="Computer Science">Computer Science</option>
+        <option value="BBIT">BBIT</option>
+        <option value="Networking">Networking</option>
+        <option value="Cybersecurity">Cybersecurity</option>
+        <option value="Business Management">Business Management</option>
+        <option value="Electrical Engeering">Electrical Engeering</option>
+        <option value="Artificial Inteligence">Artificial Inteligence</option>
+      </select>
+      <button type="submit">Sign Up</button>
+    </form>
+    <p id="signupMessage" class="message"></p>
+    <p>Already have an account? <a href="#" id="toggleLogin">Login</a></p>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById("loginForm");
+const signupForm = document.getElementById("signupForm");
+const message = document.getElementById("message");
+const signupMessage = document.getElementById("signupMessage");
+
+const loginContainer = document.querySelector(".container");
+const signupContainer = document.getElementById("signupContainer");
+
+document.getElementById("toggleSignup").onclick = () => {
+  loginContainer.classList.add("hidden");
+  signupContainer.classList.remove("hidden");
+};
+
+document.getElementById("toggleLogin").onclick = () => {
+  signupContainer.classList.add("hidden");
+  loginContainer.classList.remove("hidden");
+};
+
+// 🟢 LOGIN
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  message.textContent = "";
+
+  const admission_no = document.getElementById("admission_no").value;
+  const password = document.getElementById("password").value;
+
+  try {
+    const res = await fetch("http://localhost/cpms-api/auth/login.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ admission_no, password }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      localStorage.setItem("cpms_user", JSON.stringify(data.user));
+      window.location.href = "dashboard.html";
+    } else {
+      message.textContent = data.error || "Login failed.";
+    }
+  } catch (err) {
+    message.textContent = "Network error.";
+  }
+});
+
+// 🟢 SIGNUP
+signupForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  signupMessage.textContent = "";
+
+  const newUser = {
+    name: document.getElementById("name").value,
+    admission_no: document.getElementById("admission_no_signup").value,
+    email: document.getElementById("email").value,
+    password: document.getElementById("password_signup").value,
+    course: document.getElementById("course").value,
+  };
+
+  try {
+    const res = await fetch("http://localhost/cpms-api/auth/register.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newUser),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      signupMessage.style.color = "green";
+      signupMessage.textContent = "Account created successfully! You can log in now.";
+    } else {
+      signupMessage.textContent = data.error || "Signup failed.";
+    }
+  } catch (err) {
+    signupMessage.textContent = "Network error.";
+  }
+});
+  </script>
+</body>
+</html>

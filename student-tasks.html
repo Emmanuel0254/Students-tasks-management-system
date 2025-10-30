@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Tasks | CPMS</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      display: flex;
+      background: #f4f6f9;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ===== Sidebar ===== */
+    .sidebar {
+      width: 230px;
+      background: #1a237e;
+      color: #fff;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      transition: width 0.3s ease;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 15px;
+      letter-spacing: 1px;
+    }
+
+    .sidebar a {
+      display: block;
+      color: #fff;
+      padding: 12px 20px;
+      text-decoration: none;
+      transition: background 0.3s;
+    }
+
+    .sidebar a:hover, .sidebar a.active {
+      background: #283593;
+    }
+
+    /* ===== Main Content ===== */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      height: 100vh;
+    }
+
+    /* ===== Header ===== */
+    header {
+      background: #fff;
+      color: #333;
+      padding: 15px 25px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 20px;
+      color: #1a237e;
+    }
+
+    header button {
+      background: #1a237e;
+      color: #fff;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    header button:hover {
+      background: #283593;
+    }
+
+    /* ===== Task Section ===== */
+    .content {
+      padding: 25px;
+      overflow-x: auto;
+    }
+
+    .progress-container {
+      margin-bottom: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .progress-bar {
+      width: 100%;
+      background: #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    #progress-fill {
+      height: 25px;
+      width: 0%;
+      background: #1a237e;
+      color: white;
+      text-align: center;
+      line-height: 25px;
+      border-radius: 8px;
+      transition: width 0.4s ease;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background: #f1f1f1;
+      color: #333;
+    }
+
+    .done-btn {
+      background: #43a047;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-right: 20px;
+    }
+
+    .done-btn:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
+
+    .submit-btn {
+      background: #1a237e;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-right: 0;
+    }
+
+    .submit-btn:hover {
+      background: #283593;
+    }
+
+    /* ===== Modal ===== */
+    #submitModal {
+      display:none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center; align-items: center;
+      z-index: 1000;
+    }
+
+    #submitModal .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 400px;
+      text-align: left;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    #submitModal input[type="url"], #submitModal input[type="file"] {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    #submitModal .actions {
+      text-align: right;
+      margin-top: 10px;
+    }
+
+    #submitModal .actions button {
+      padding: 8px 15px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #submitModal .cancel {
+      background: #e74c3c;
+      color: white;
+      margin-right: 10px;
+    }
+
+    #submitModal .submit {
+      background: #1a237e;
+      color: white;
+    }
+
+    .back-btn{
+        background: #fff;
+        color: #1a237e !important;
+        text-align: center;
+        margin: 20px;
+        border-radius: 8px;
+        padding: 10px;
+        transition: 0.3s;
+        display: block;
+    }
+    .back-btn:hover{
+        background-color: #009624;
+    }
+
+
+    /* ===== Responsive ===== */
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        left: -250px;
+        top: 0;
+        height: 100%;
+        z-index: 100;
+      }
+
+      .sidebar.active {
+        left: 0;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+      }
+
+      body {
+        flex-direction: column;
+      }
+
+      .done-btn
+      .submit-btn{
+        display: block;
+        width: 100%;
+        margin: 5px 0;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <h2>Student Task Management</h2>
+    <a href="dashboard.html">🏠 Dashboard</a>
+    <a href="#" class="active">📝 Tasks</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <header>
+      <h1 id="courseTitle"></h1>
+      <button onclick="toggleSidebar()">☰</button>
+    </header>
+
+    <div class="content">
+      <div class="progress-container">
+        <h3>Progress</h3>
+        <div class="progress-bar">
+          <div id="progress-fill">0%</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Task</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="taskBody">
+          <tr><td colspan="5">Loading tasks...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="submitModal">
+    <div class="modal-content">
+      <h3>Submit Task</h3>
+      <p id="taskNameLabel" style="font-weight: bold;"></p>
+
+      <label>GitHub / Project Link:</label>
+      <input type="url" id="projectLink" placeholder="https://github.com/username/project">
+
+      <label>Upload File:</label>
+      <input type="file" id="projectFile">
+
+      <div class="actions">
+        <button class="cancel" onclick="closeSubmitModal()">Cancel</button>
+        <button class="submit" onclick="submitTaskForm()">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const sidebar = document.getElementById("sidebar");
+    function toggleSidebar() {
+      sidebar.classList.toggle("active");
+    }
+
+    const student = JSON.parse(localStorage.getItem("cpms_user"));
+    const course = localStorage.getItem("selected_course");
+    const taskBody = document.getElementById("taskBody");
+    const courseTitle = document.getElementById("courseTitle");
+    courseTitle.textContent = `📚 Tasks for ${course}`;
+
+    if (!student || !course) window.location.href = "student-login.html";
+
+    async function viewTasks() {
+      taskBody.innerHTML = "<tr><td colspan='5'>Loading tasks...</td></tr>";
+      try {
+        const res = await fetch(`http://localhost/cpms-api/tasks/get_tasks.php?course=${encodeURIComponent(course)}`);
+        const data = await res.json();
+
+        if (data.error) {
+          taskBody.innerHTML = `<tr><td colspan='5'>${data.error}</td></tr>`;
+          return;
+        }
+        if (!data.length) {
+          taskBody.innerHTML = "<tr><td colspan='5'>No tasks found for this course</td></tr>";
+          return;
+        }
+
+        taskBody.innerHTML = data.map(task => `
+          <tr>
+            <td>${task.id}</td>
+            <td>${task.title}</td>
+            <td>${task.description}</td>
+            <td>${task.status}</td>
+            <td>
+              <button class="done-btn" onclick="markDone(${task.id}, this)" ${task.status.toLowerCase() === 'completed' ? 'disabled' : ''}>Done</button>
+              <button class="submit-btn" onclick="submitTask(${task.id})">Submit</button>
+            </td>
+          </tr>
+        `).join("");
+        updateProgress();
+      } catch (err) {
+        taskBody.innerHTML = `<tr><td colspan='5'>Error loading tasks: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function markDone(taskId, btn) {
+      try {
+        const res = await fetch("http://localhost/cpms-api/tasks/update_task_status.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ task_id: taskId, status: "Completed" })
+        });
+        const data = await res.json();
+        if (data.success) {
+          btn.disabled = true;
+          btn.closest("tr").children[3].textContent = "Completed";
+          updateProgress();
+        } else alert("Failed to update status.");
+      } catch {
+        alert("Error marking task as done.");
+      }
+    }
+
+    function updateProgress() {
+      const all = document.querySelectorAll(".done-btn").length;
+      const completed = document.querySelectorAll(".done-btn:disabled").length;
+      const percent = all ? Math.round((completed / all) * 100) : 0;
+      const fill = document.getElementById("progress-fill");
+      fill.style.width = percent + "%";
+      fill.textContent = percent + "%";
+    }
+
+    let currentTaskId = null;
+
+    function submitTask(taskId) {
+      currentTaskId = taskId;
+      const taskRow = document.querySelector(`button[onclick="submitTask(${taskId})"]`).closest("tr");
+      const taskName = taskRow.children[1].textContent;
+      document.getElementById("taskNameLabel").textContent = `Task: ${taskName}`;
+      document.getElementById("submitModal").style.display = "flex";
+    }
+
+    function closeSubmitModal() {
+      document.getElementById("submitModal").style.display = "none";
+      document.getElementById("projectLink").value = "";
+      document.getElementById("projectFile").value = "";
+      currentTaskId = null;
+    }
+
+    async function submitTaskForm() {
+      const link = document.getElementById("projectLink").value.trim();
+      const fileInput = document.getElementById("projectFile");
+      const file = fileInput.files[0];
+
+      if (!link && !file) {
+        alert("Please provide either a GitHub link or a file to submit.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("task_id", currentTaskId);
+      formData.append("link", link);
+      if (file) formData.append("file", file);
+
+      try {
+        const res = await fetch("http://localhost/cpms-api/tasks/submit_task.php", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          alert("Task submitted successfully!");
+          closeSubmitModal();
+        } else {
+          alert(data.error || "Submission failed. Try again.");
+        }
+      } catch (err) {
+        alert("Error submitting task: " + err.message);
+      }
+    }
+
+    viewTasks();
+  </script>
+</body>
+</html>
